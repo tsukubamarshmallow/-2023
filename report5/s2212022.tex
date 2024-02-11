@@ -1,0 +1,211 @@
+\documentclass[fontsize = 10pt, paper= a4]{jlreq}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\definecolor{OliveGreen}{rgb}{0.0,0.6,0.0}
+\definecolor{Magenta}{cmyk}{0, 1, 0, 0}
+\definecolor{colFunc}{rgb}{1,0.07,0.54}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{colID}{rgb}{0.63,0.44,0}
+\lstset{
+language={C},                   %言語の指定
+basicstyle={\ttfamily\small},        %書体の指定
+backgroundcolor={\color[gray]{.95}}, %背景色と透過度
+keywordstyle={\color{blue}},         %キーワード(int, ifなど)の書体指定
+commentstyle={\color{OliveGreen}},   %注釈の書体 
+stringstyle=\color{Magenta},         %文字列
+frame=single,                        %枠縁(leftline，topline，bottomline，lines，trBL，shadowbox, single)
+numbers=left,                        %行番号表示
+numberstyle={\ttfamily\small},       %行番号の書体指定
+breaklines=true,                     %折り返し(自動改行)
+breakindent = 10pt,                  %自動改行後のインデント量(デフォルトでは20[pt])	
+tabsize=2,                           %タブの大きさ
+captionpos=t                         %キャプションの場所(t,b : "tb"ならば上下両方に記載)
+}
+\renewcommand{\lstlistingname}{図} % キャプション名の指定
+
+\begin{document}
+
+\title{プログラミング　第5回　レポート}
+\author{202212022 田島瑞起}
+\date{2023/07/09}
+\maketitle
+
+\section{はじめに}
+今回の課題では,ファイル内のタブ文字を空白文字に変換する方法について学ぶ
+\section{設問}
+
+\subsection{課題内容の説明}
+今課題で作成するプログラムは,下記要件を満たす必要がある。
+
+1. このプログラムはコマンドライン引数を受け取るとする。
+コマンドライン引数のパターンは次の通りである。
+パターン 1 a.out filename
+パターン 2 a.out n filename
+パターン 3 a.out n filename1 filename2 ...
+2. このプログラムは、ファイル名を受け取り、そのファイルの中にタブコード \t があれば、それを半角
+空白に置き換える。
+パターン 1 の場合は、半角空白の数を 2 とする。
+パターン 2 および 3 の場合は、半角空白の数は n で与えられた数とする。
+パターン 3 のように複数のファイル名が与えられていても、順次それらのファイルを開いて対応し
+ていくとする。
+3. 出力は標準出力へ行う。タブコード以外はそのまま出力される。
+4. 一行分の文字列とタブを置き換える空白の数を引数として受け取り、標準出力へ出力する関数
+printout を作成し、それを使うようにすること。
+\subsection{課題への取り組み方針}
+まず行中のtabを空白文字に変換して出力するprintoutを定義する。その後,課題内容の説明で確認したパターンごとに分岐させる。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-1.c ,label=s2212022-1.c]
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#define BSIZE 100
+
+int main(int ac,char* av[]){
+    char buf[BSIZE];
+    FILE *fp1;
+    char* p;
+    int i;
+    int j;
+    int k;
+
+    void printout(char* buf,int wc){
+        /*タブコードが見つかれば,空白文字で置き換える*/
+        int l1;
+        l1 = strlen(buf);
+        for(i=0;i<l1;i++){
+            if(buf[i]=='\t'){
+                for(k=0;k<wc;k++){
+                    printf(" ");
+                }
+            }else{
+                printf("%c",buf[i]);
+            }
+        }
+    }
+    if(ac == 1){
+        printf("Please adhere to the following restrictions\n");
+        printf("1: ./s2212022.out file1");
+        printf("2: ./s2212022.out n file1");
+        printf("3: ./s2212022.out n file1 file2");
+    }
+
+    if(ac == 2){
+        int wc = 2;
+        char* file_name_r = av[1];
+        /*読み込みファイルを書き出しファイルを準備する*/
+        fp1 = fopen(file_name_r,"r");
+        if(fp1 == NULL){
+                perror("fopen");
+                exit(EXIT_FAILURE);
+            }
+        /*ファイルを読みこむ*/
+        while(fgets(buf, BSIZE,fp1) != NULL){
+            printout(buf,wc);
+        }   
+    }
+
+    if(ac == 3){
+        int wc = atoi(av[1]);
+        char* file_name_r = av[2];
+         /*読み込みファイルを書き出しファイルを準備する*/
+        fp1 = fopen(file_name_r,"r");
+        if(fp1 == NULL){
+                perror("fopen");
+                exit(EXIT_FAILURE);
+        }
+        /*ファイルを読みこむ*/
+        while(fgets(buf, BSIZE,fp1) != NULL){
+            printout(buf,wc);
+        } 
+    }
+
+    if(ac > 3){
+        int wc = atoi(av[1]);
+        for(j=2; j < ac; j++){
+            char* file_name_r = av[j];
+            /*読み込みファイルを書き出しファイルを準備する*/
+            fp1 = fopen(file_name_r,"r");
+            if(fp1 == NULL){
+                    perror("fopen");
+                    exit(EXIT_FAILURE);
+            }
+            /*ファイルを読みこむ*/
+            while(fgets(buf, BSIZE,fp1) != NULL){
+                printout(buf,wc);
+            }
+        }    
+    }   
+    printf("\n"); 
+}
+\end{lstlisting}
+
+printout関数は全探査して,対象のタブコードが見つかり次第,空白で置き換えるという仕様にした。
+またコマンド入力の形式によって分岐するように,acの値によって場合分けを実装した。
+\subsection{確認}
+パターンごと正常に作動すること,意図しない入力に対してはエラー表示させることが出来ているか確認する.
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test1,label=test1]
+ 使用するテキストファイル内訳
+ -------------------------
+ test1
+ apple\tred
+ orange\torange
+ tomato\tred
+ -------------------------
+ test2
+apple\tapple\tapple
+red\tred\tred
+orange\torange\torange
+tomato\ttomato\ttomato
+hoge\thoge\thoge\t\thoge
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test2,label=test2]
+    Please adhere to the following restrictions
+    ./s2212022.out file1
+    ./s2212022.out n file1
+    ./s2212022.out n file1 file2    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test3,label=test3]
+    s2212022@icho01:~/Programing2023/report5$ ./s2212022.out test1 
+    apple  red
+    orange  orange
+    tomato  red    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test4,label=test4]
+    s2212022@icho01:~/Programing2023/report5$ ./s2212022.out 10 test1 
+    apple          red
+    orange          orange
+    tomato          red    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test5,label=test5]
+    s2212022@icho01:~/Programing2023/report5$ ./s2212022.out 10 test1 test2
+    apple          red
+    orange          orange
+    tomato          redapple          apple          apple
+    red          red          red
+    orange          orange          orange
+    tomato          tomato          tomato
+    hoge          hoge          hoge                    hoge
+\end{lstlisting}
+
+
+\section{感想}
+今課題で特に時間を要したのが,何処から書き出せばよいかという考察の部分であった。
+ノートに全体像（入力→エンジン→出力）を書き出して,大きな部分に分割しつつ詳細を設計するという,
+トップダウン形式を採用することによって,コードを作成することが出来た。
+コードに限らず何かを創作する際には,制約を満たしつつ全体を部分に還元していくという考え方が非常に強力だということに気が付いた。
+
+
+\bibliographystyle{plain}
+\bibliography{s2212022}
+
+\end{document}

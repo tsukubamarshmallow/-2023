@@ -1,0 +1,193 @@
+\documentclass[fontsize = 10pt, paper= a4]{jlreq}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\definecolor{OliveGreen}{rgb}{0.0,0.6,0.0}
+\definecolor{Magenta}{cmyk}{0, 1, 0, 0}
+\definecolor{colFunc}{rgb}{1,0.07,0.54}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{colID}{rgb}{0.63,0.44,0}
+\lstset{
+language={C},                   %言語の指定
+basicstyle={\ttfamily\small},        %書体の指定
+backgroundcolor={\color[gray]{.95}}, %背景色と透過度
+keywordstyle={\color{blue}},         %キーワード(int, ifなど)の書体指定
+commentstyle={\color{OliveGreen}},   %注釈の書体 
+stringstyle=\color{Magenta},         %文字列
+frame=single,                        %枠縁(leftline，topline，bottomline，lines，trBL，shadowbox, single)
+numbers=left,                        %行番号表示
+numberstyle={\ttfamily\small},       %行番号の書体指定
+breaklines=true,                     %折り返し(自動改行)
+breakindent = 10pt,                  %自動改行後のインデント量(デフォルトでは20[pt])	
+tabsize=2,                           %タブの大きさ
+captionpos=t                         %キャプションの場所(t,b : "tb"ならば上下両方に記載)
+}
+\renewcommand{\lstlistingname}{図} % キャプション名の指定
+
+\begin{document}
+
+\title{プログラミング　第2回　レポート}
+\author{202212022 田島瑞起}
+\date{2023/06/10}
+\maketitle
+
+\section{はじめに}
+今回の課題では,0からn-1までの範囲の乱数取得関数の作成(設問1),mからnまでの範囲の乱数取得関数の作成(設問2),コマンドライン引数を用いたmからnまでの乱数取得関数の作成(設問3)を満たしたレポートをlatexを用いて作成する。
+\section{0からn-1までの範囲の乱数取得関数の作成(設問1)}
+\subsection{課題内容の説明}
+0からn-1までの範囲の値をランダムに取得できるような関数myrandN関数を作成し、それをmain関数内でテストする。
+\subsection{課題への取り組み方針}
+通常のrandでは値が0からRAND\_MAXまで変化しうるので、myrandNはその値を0からn-1まで圧縮できるような関数である必要がある。
+そこで、$ 0 <= rand() < RAND\_MAX $の関係を用いて、この不等式の右辺がnになるよう式変形する。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-1.c ,label=s2212022-1.c]
+    int myrandN(int n){
+        return (int)( n * (rand()+1.0) / (RAND_MAX+1.0));
+    }
+    
+    int main(int ac, char *av[]){
+        int i;
+        srand(time(NULL));
+    
+        for(i=0;i<20;i++){
+            printf("%d\n",myrandN(6));
+        }
+    
+\end{lstlisting}
+
+図\ref{s2212022-1.c}にて、前述した圧縮する式は$ (n-1 -0 + 1) * (rand()+1.0) / (RAND\_MAX+1.0) $と表現することができる。
+これによって、rand()の値を0からn-1に圧縮することができる。
+後は結果を確かめるべく、main関数の中で20回ほどmyrand(6)を呼び出し、条件を満たしているか確認できるようになっている。
+また実行の際に乱数が変更されるように、srand(time(NULL))もmain関数内に記述した。
+
+\subsection{確認}
+確認するべきポイントとしては、乱数が0から5に分布していることと、呼び出し時間によって乱数が異なることである。
+よって二回呼び出した結果のそれぞれ先頭10項を確認すると、
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-1.out ,label=s2212022-1.out]
+2       3       4       1       5       1       1       1       4       1      
+0       5       3       3       3       5       0       1       1       4     
+\end{lstlisting}
+上記二つの条件を満たしていることがわかる。
+
+\section{mからnまでの範囲の乱数取得関数の作成(設問2)}
+\subsection{課題内容の説明}
+設問1で作成したプログラムに変更を加えて、nからmまでの範囲の乱数取得可能な関数を作成する。
+\subsection{課題への取り組み方針}
+設問1で作成したmyarrayN()関数を一般化し,nからmまでの範囲の乱数を取得できるように、
+関数内部の$ (n-1 -0 + 1) * (rand()+1.0) / (RAND\_MAX+1.0) $について変更を加える。
+
+
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-2.c ,label=s2212022-2.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <time.h>
+    
+    int myrandM2N(int m ,int n){
+        return (int)(m + (n + 1 - m)* (rand()+1.0) / (RAND_MAX+1.0));
+    }
+    
+    int main(int ac, char *av[]){
+        int i;
+        srand(time(NULL));
+    
+        for(i=0;i<25;i++){
+            printf("%d\n",myrandM2N(1,10));
+        }
+\end{lstlisting}
+
+図\ref{s2212022-2.c}にて、変更を加えた後の式は$(m + (n - m + 1)* (rand()+1.0) / (RAND_MAX+1.0))$となっている。
+これは不等式である$ 0 <= rand() < RAND\_MAX $を同値変形することによって得られる。
+文字を使わずに表すなら$(最小値)<= 最小値 + (最大値-最小値 + 1)*(rand() + 1.0)/((RAND_MAX+1.0) <= (最大値))$と表せる。
+これによってnからmまでの範囲の値を乱数取得することが可能になる。
+
+\subsection{確認}
+設問1と同様に範囲と実行時間によって乱数が変化することが確認できれば良いが、今回の場合変更を加えたことによって確認する必要があるのは乱数の範囲についてだけである。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-2.out ,label=s2212022-2.out]
+    1       10      6       9       3       1       10      3       7       9       
+    4       1       7       6       9       9       4       1       2       6       
+    3       6       3       2       3
+\end{lstlisting}
+
+1から10まで乱数が取得できているので確認すべき条件を満たしている。
+
+\section{コマンドライン引数を用いたmからnまでの範囲の乱数取得関数の作成(設問3)}
+\subsection{課題内容の説明}
+設問2で作成したプログラムに変更を加えて,コマンドライン引数を用いたnからmまでの範囲の乱数取得可能な関数を作成する。
+\subsection{課題への取り組み方針}
+設問2で作成したプログラムでは値の範囲をあらかじめ指定してから実行する形になっていたが、これをコマンドライン引数で指定できるように変更を加える。
+入力した値がchar*型として格納されるため、数値に変換して値を取り扱えるようにする。
+また、入力数が3を満たしていて、m,n,cの制約を満たしている時のみ正常にプログラムが実行されるように、制御構文を用いて分岐させる。
+
+
+\subsection{解答結果}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single,  caption=s2212022-3.c ,label=s2212022-3.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <time.h>
+    
+    int myrandM2N(int m ,int n){
+        return (int)(m + (n + 1 - m)* (rand()+1.0) / (RAND_MAX+1.0));
+    }
+    
+    int main(int ac, char *av[]){
+        int i;
+        int min;
+        int max;
+        int rep;
+        min = atoi(av[1]);
+        max = atoi(av[2]);
+        rep = atoi(av[3]);
+        srand(time(NULL));
+    
+        if(ac != 4){
+            printf("Usage:a.out m n c\n 0 < m < n < 100 \n c is the number of repetition");
+            exit(1);
+        }
+    
+        if(min > max|| max < 1 || max > 99 || min < 1 || min >99){
+            printf("Usage:a.out m n c\n 0 < m < n < 100 \n ");
+            exit(1);
+        }
+    
+        for(i=0;i<rep;i++){
+            printf("%d\n",myrandM2N(min,max));
+        }
+    
+\end{lstlisting}
+図\ref{s2212022-3.c}にて、av[]に格納される文字列を数値型に変換するためatoi()関数を使用した。
+また、入力数が3の制約を満たした時のみ実行されるよう、if(ac != 4)で分岐を実装した。(コマンドライン引数は入力数３+./s2212022-3.outの計4つであることに注意)
+加えて、入力値の制約を満たした時のみ実行されるよう、if(min > max|| max < 1 || max > 99 || min < 1 || min >99)でも分岐を実装した。
+\subsection{確認}
+入力数が3の時のみプログラムが実行され、mncが制約を満たしている時のみプログラムが実行されている必要がある。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-3.out 3 2 5 ,label=s2212022-3.c 3 2 5]
+    Usage:a.out m n c
+    0 < m < n < 100   
+\end{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-3.out 1 2 3 4 ,label=s2212022-3.c 1 2 3 4]
+    Usage:a.out m n c
+    0 < m < n < 100
+    c is the number of repetition
+\end{lstlisting}
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-3.out 2 5 10 ,label=s2212022-3.c 2 5 10]
+    4       3       2       5       5       2       3       3       2       5        
+\end{lstlisting}
+図\ref{s2212022-3.c 3 2 5}ではm>nの制約違反、図\ref{s2212022-3.c 1 2 3 4}では入力数の違反を犯している。
+図\ref{s2212022-3.c 2 5 10}にて、入力数3でm,n,cが制約を満たしている時のみプログラムが正常動作していることが確認された。
+
+\section{感想}
+今課題にて、設問1ではどうすれば乱数の範囲を圧縮できるかという部分が個人的な難所だった。0<=rand()<RAND\_MAXの関係性から導けるということに気が付いてからはスムーズに実装することができた。
+設問2では設問1を一般化すればよいだけであったから特に詰まることなく実装できた。
+設問3ではコマンドライン引数の扱いについて苦労した。例えば./s2212022-3.out 1 2 3を実行した際に、av[0] = "./s2212022-3.out"が格納されるという関係性を知らなかったので取り扱いがうまくいかなかった。
+av[]の内容をfor文で出力してから関係性に気が付くことができ、わからない際とりあえず出力してみることの重要性を再認識した。
+latexでのレポート作成については前回ソースコードを適当にverbatimで張り付けたため参照ができなかったが、文献\cite{tab0}を参考にし、lstistingパッケージを用いて整形したソースコードを埋め込むことができるようになった。
+
+
+\bibliographystyle{plain}
+\bibliography{s2212022}
+\end{document}

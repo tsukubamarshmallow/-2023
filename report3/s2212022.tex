@@ -1,0 +1,434 @@
+\documentclass[fontsize = 10pt, paper= a4,twocolumn,column_gap=3zw]{jlreq}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\definecolor{OliveGreen}{rgb}{0.0,0.6,0.0}
+\definecolor{Magenta}{cmyk}{0, 1, 0, 0}
+\definecolor{colFunc}{rgb}{1,0.07,0.54}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{colID}{rgb}{0.63,0.44,0}
+\lstset{
+language={C},                   %言語の指定
+basicstyle={\ttfamily\small},        %書体の指定
+backgroundcolor={\color[gray]{.95}}, %背景色と透過度
+keywordstyle={\color{blue}},         %キーワード(int, ifなど)の書体指定
+commentstyle={\color{OliveGreen}},   %注釈の書体 
+stringstyle=\color{Magenta},         %文字列
+frame=single,                        %枠縁(leftline，topline，bottomline，lines，trBL，shadowbox, single)
+numbers=left,                        %行番号表示
+numberstyle={\ttfamily\small},       %行番号の書体指定
+breaklines=true,                     %折り返し(自動改行)
+breakindent = 10pt,                  %自動改行後のインデント量(デフォルトでは20[pt])	
+tabsize=2,                           %タブの大きさ
+captionpos=t                         %キャプションの場所(t,b : "tb"ならば上下両方に記載)
+}
+\renewcommand{\lstlistingname}{図} % キャプション名の指定
+
+\begin{document}
+
+\title{プログラミング　第3回　レポート}
+\author{202212022 田島瑞起}
+\date{2023/06/20}
+\maketitle
+
+\section{はじめに}
+今回の課題では,配列のマッチング(設問1),strcmpの実装(設問2),strcatの実装(設問3)についてlatexを用いてレポート作成する。
+\section{配列のマッチング(設問1)}
+\subsection{課題内容の説明}
+標準入力を複数回受け付け,その結果をもとに入力内容をリストを作成し,再度標準入力を受け付けた際,その内容がリストに含まれているか判定できるプログラムを作成する。
+\subsection{課題への取り組み方針}
+まず,入力されたテキストから改行コードを削除する外部関数chomp()を実装する。main関数内では,複数回の標準入力をリスト化可能である事、検索マッチング可能である事,以上2条件を満たすよう実装する。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-1.c ,label=s2212022-1.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    
+    #define ASIZE 10
+    
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+    
+    
+    int main(int ac,char* av[]){
+        char* s[ASIZE];
+        char search[ASIZE];
+        int i;
+        
+        for(i=0;i<ASIZE;i++){
+            char buf[ASIZE];
+            char* p;
+            printf("input string:");
+            chomp(fgets(buf,ASIZE,stdin));
+            p = (char*)malloc(sizeof(strlen(buf) + 1));
+        
+            if(p == NULL){
+                printf("Memory allocation error!\n");
+                exit(EXIT_FAILURE);
+            }
+            strcpy(p,buf);
+            s[i] = p;
+        }
+        printf("input string list\n");
+        printf("-----------------\n");
+        for(i=0;i<ASIZE;i++){
+            printf("No.%d :%s \n",i+1,s[i]);
+        }
+        printf("-----------------\n");
+        
+        printf("search string:");
+        chomp(fgets(search,ASIZE,stdin));
+    
+        for(i=0;i<ASIZE;i++){
+            if(strcmp(s[i],search) == 0){
+                printf("found at index %d in the array : %s",i+1,s[i]);
+                break;
+            }
+            if(i == ASIZE -1){
+                printf("not found :%s\n",search);
+            }
+        }
+        
+    }
+\end{lstlisting}
+
+図\ref{s2212022-1.c}にて確認できるように,改行処理はchomp関数で実装した。配列を受け取り,ループ中に改行コードを発見したら配列の末尾文字で置き換えてリターンするという処理内容になっている。
+標準入力を複数回受け付け,リストを作成するため,char* s[ASIZE]を用意し,この文字列のポインタを格納する配列に,標準入力で受け付けた文字列のポインタを格納する仕組みをループ文で実装した。
+入力を受け付け,buf[ASIZE]に文字列を格納し,動的にメモリを作成して,その箇所をポインタpで指定し,pにbufをコピーし,最後にポインタの配列であるsに代入するという流れだ。
+そして最後にマッチングを実装するために文字列比較可能なstrcmpを利用した。
+
+\subsection{確認}
+入力に対して,マッチング結果が条件を満たしているか確認できれば良い。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test1,label=test1]
+    input string:adsfae
+    input string:aga
+    input string:gaer
+    input string:sdfa
+    input string:sda
+    input string:adgar
+    input string:fdgar
+    input string:afae
+    input string:dasfea
+    input string:daf
+    input string list
+    -----------------
+    No.1 :adsfae
+    No.2 :aga
+    No.3 :gaer
+    No.4 :sdfa
+    No.5 :sda
+    No.6 :adgar
+    No.7 :fdgar
+    No.8 :afae
+    No.9 :dasfea
+    No.10 :daf
+    -----------------
+    search string:sda
+    found at index 5 in the array : sda 
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test2,label=test2]
+    input string:asdf
+    input string:gafd
+    input string:agadsa
+    input string:garedfg
+    input string:a
+    input string:df
+    input string:a
+    sinput string:ef
+    input string:a
+    input string:dfsgdv
+    input string list
+    -----------------
+    No.1 :asdf
+    No.2 :gafd
+    No.3 :agadsa
+    No.4 :garedfg
+    No.5 :a
+    No.6 :df
+    No.7 :a
+    No.8 :sef
+    No.9 :a
+    No.10 :dfsgdv
+    -----------------
+    search string:are
+    not found :are
+    
+\end{lstlisting}
+
+上記二つの条件を満たしていることがわかる。
+
+\section{strcmpの実装(設問2)}
+\subsection{strcmpを用いた文字列マッチング(設問2-1)}
+strcmpを用いて標準入力から受け付けた文字列のマッチングを行う。
+\subsubsection{課題への取り組み方針}
+設問1で作成したchomp関数で入力した文字列の改行コードをそぎ落とし,その後strcmpで文字列のマッチングを行う。
+\subsubsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-2-1.c ,label=s2212022-2-1.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    
+    #define SIZE 100
+    
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+    
+    int main(int ac, char* av[]){
+        char s1[SIZE];
+        char s2[SIZE];
+    
+        printf("input  first string:\n");
+        chomp(fgets(s1,SIZE,stdin));
+        printf("input  second string:\n");
+        chomp(fgets(s2,SIZE,stdin));
+    
+        printf("the result of comparing(%s,%s) = %d\n",s1,s2,strcmp(s1,s2));
+       
+    }
+\end{lstlisting}
+
+条件を満たすように実装した結果、図\ref{s2212022-2-1.c}となった。
+
+\subsubsection{確認}
+数回呼び出してstrcmp関数が正常に動作しているか確認すると、
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test3,label=test3]
+    input  first string:
+    abc
+    input  second string:
+    abcd
+    the result of comparing(abc,abcd) = -100
+
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test4,label=test4]
+    input  first string:
+    asdfg
+    input  second string:
+    asdfg
+    the result of comparing(asdfg,asdfg) = 0
+
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test5,label=test5]
+    input  first string:
+    asdfgh
+    input  second string:
+    asdfg
+    the result of comparing(asdfgh,asdfg) = 104    
+\end{lstlisting}
+
+正の値,負の値,零が期待通りに帰っているので正常に動作していることがわかる。
+
+\subsection{mystrcmpの実装(設問2-2)}
+strcmpを用いて標準入力から受け付けた文字列のマッチングを行う。
+\subsubsection{課題への取り組み方針}
+mystrcmpは引数に配列2つ,返り値に状況に応じた整数値が対応するように実装する。
+受け取った配列のサイズをstrlen()で測り,その長さに応じて処理を変化させる。
+\subsubsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-2-2.c,label=s2212022-2-2.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    
+    #define SIZE 100
+    
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+    
+    int mystrcmp(const char *s1,const char *s2){
+        int l1;
+        int l2;
+        int i;
+    
+        l1 = strlen(s1);
+        l2 = strlen(s2);
+        if(l1>=l2){
+            for(i=0;i<l2;i++){
+                if(s1[i] != s2[i]){
+                    return i;
+                }
+            }
+            if(l1 != l2){
+                return l2;
+            }else{
+                return -1;
+            }
+        }
+    
+        if(l1<l2){
+            for(i=0;i<l1;i++){
+                if(s1[i] != s2[i]){
+                    return i;
+                }
+            }
+            return l1;
+        }
+    }
+    
+    int main(int ac, char* av[]){
+        char s1[SIZE];
+        char s2[SIZE];
+    
+        printf("input  first string:\n");
+        chomp(fgets(s1,SIZE,stdin));
+        printf("input  second string:\n");
+        chomp(fgets(s2,SIZE,stdin));
+    
+        printf("the result of comparing(%s,%s) = %d\n",s1,s2,mystrcmp(s1,s2));
+       
+    } 
+\end{lstlisting}
+
+図\ref{s2212022-2-2.c}ではmystrcmpの条件を満たすために、l1とl2の大小関係によってリターンする値を分岐させた。
+
+\subsubsection{確認}
+l1>l2,l1=l2,l1<l2の三通りの結果が期待通りになるか確認すると、
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test6,label=test6]
+    input  first string:
+    asdfgh
+    input  second string:
+    asdf
+    the result of comparing(asdfgh,asdf) = 4
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test7,label=test7]
+    input  first string:
+    asdfgh
+    input  second string:
+    asdfgh
+    the result of comparing(asdfgh,asdfgh) = -1    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test8,label=test8]
+    input  first string:
+    asdfg
+    input  second string:
+    asxchsdf
+    the result of comparing(asdfg,asxchsdf) = 2     
+\end{lstlisting}
+
+3通り確認し,mystrcmp()が正常に動作していることを確認できた。
+
+\section{mystrcatの実装(設問3)}
+\subsection{課題内容の説明}
+標準入力を2回受け付けた後に、それらの文字列を結合した文字列を返却するようなmystrcat()を実装する。
+\subsection{課題への取り組み方針}
+標準入力で受け付けた文字列のサイズに適したメモリを動的に生成して、その部分に結合した文字列を埋め込むことを考える。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-3.c,label=s2212022-3.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    
+    #define SIZE 100
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+    char* mystrcat(char* s1, char* s2){
+        int l1;
+        int l2;
+        int size = l1 + l2 +1;
+        int i;
+        char *p;
+        l1 = strlen(s1);
+        l2 = strlen(s2);
+        p = (char*)malloc(size);
+        for(i=0;i<sizeof(s1);i++){
+            if(s1[i] != '\0'){
+                p[i] = s1[i];
+            }
+        }
+        for(i=0;i<sizeof(s2);i++){
+            p[l1+i] = s2[i];
+        }
+        
+        return p;
+    }
+    int main(int ac, char* av[]){
+        char s1[SIZE];
+        char s2[SIZE];
+    
+        printf("input  first string:\n");
+        chomp(fgets(s1,SIZE,stdin));
+        printf("input  second string:\n");
+        chomp(fgets(s2,SIZE,stdin));
+    
+        printf("the result of mystrcat(%s,%s) = %s\n",s1,s2,mystrcat(s1,s2));
+       
+    }
+\end{lstlisting}
+
+図\ref{s2212022-3.c}にて確認できるように、配列を二つ受け取り、それぞれの配列の長さをl1,l2とした。
+そうするとmystrcat()の返り値となる配列のサイズは,l1+l2+1となる。これは二つの配列の文字数+末尾文字が新たな結合配列のサイズになるからである。
+あとはfor文で動的に生成したメモリに一つずつ文字を埋め込んでいき、末尾に配列の末尾文字を埋め込んだ。
+
+\subsection{確認}
+入力に対して期待される文字列が帰ってくるか確認すると
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test9,label=test9]
+    input  first string:
+    abcdefg
+    input  second string:
+    hijklmn
+    the result of mystrcat(abcdefg,hijklmn) = abcdefghijklmn    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test10,label=test10]
+    input  first string:
+    orange
+    input  second string:
+    apple
+    the result of mystrcat(orange,apple) = orangeapple
+    
+\end{lstlisting}
+
+上記二つの条件を満たしていることがわかる。
+
+\section{感想}
+設問1では,配列とポインタの差異について十分に理解していなかったため,解答得るまでに時間を要した。
+ポインタが読み込み専用領域をさす場合と,読み書き可能領域にある場合では取り扱いが全く違うということ,
+加えて配列が読み書き可能領域にマッピングされていることを理解したことで\cite{rita},解答に至ることが出来た。
+格納された変数とオブジェクトがそれぞれメモリ上のどの領域に書き込まれたものなのか理解し,
+デバッグをしながらメモリ上の動きを見ながらテストしたことも,エラーの原因を理解する助けになった。
+表層的な理解では応用が利かないと改めて理解できたので,今後はエラーが出た際表面的な解決手段を探るのではなく,
+時間がかかっても成るべく原理原則の理解に時間をかけるようにしたい。
+
+\bibliographystyle{plain}
+\bibliography{s2212022}
+
+\end{document}
+
+
+
+
+

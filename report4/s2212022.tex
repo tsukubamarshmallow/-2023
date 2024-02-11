@@ -1,0 +1,559 @@
+\documentclass[fontsize = 10pt, paper= a4,twocolumn,column_gap=3zw]{jlreq}
+
+\usepackage{graphicx}
+\usepackage{color}
+\usepackage{listings}
+\usepackage{url}
+\definecolor{OliveGreen}{rgb}{0.0,0.6,0.0}
+\definecolor{Magenta}{cmyk}{0, 1, 0, 0}
+\definecolor{colFunc}{rgb}{1,0.07,0.54}
+\definecolor{CadetBlue}{cmyk}{0.62,0.57,0.23,0}
+\definecolor{Brown}{cmyk}{0,0.81,1,0.60}
+\definecolor{colID}{rgb}{0.63,0.44,0}
+\lstset{
+language={C},                   %言語の指定
+basicstyle={\ttfamily\small},        %書体の指定
+backgroundcolor={\color[gray]{.95}}, %背景色と透過度
+keywordstyle={\color{blue}},         %キーワード(int, ifなど)の書体指定
+commentstyle={\color{OliveGreen}},   %注釈の書体 
+stringstyle=\color{Magenta},         %文字列
+frame=single,                        %枠縁(leftline，topline，bottomline，lines，trBL，shadowbox, single)
+numbers=left,                        %行番号表示
+numberstyle={\ttfamily\small},       %行番号の書体指定
+breaklines=true,                     %折り返し(自動改行)
+breakindent = 10pt,                  %自動改行後のインデント量(デフォルトでは20[pt])	
+tabsize=2,                           %タブの大きさ
+captionpos=t                         %キャプションの場所(t,b : "tb"ならば上下両方に記載)
+}
+\renewcommand{\lstlistingname}{図} % キャプション名の指定
+
+\begin{document}
+
+\title{プログラミング　第4回　レポート}
+\author{202212022 田島瑞起}
+\date{2023/07/01}
+\maketitle
+
+\section{はじめに}
+今回の課題では,文字列を格納した一方向リストの作成及び,表示(設問1),一方向リスト内の文字列検索(設問2),双方向リストを用いた文字列の削除(設問3)についてlatexを用いてレポート作成する。
+\section{文字列を格納した一方向リストの作成及び,表示(設問1)}
+\subsection{課題内容の説明}
+講義ノート(14)の図11を改造し,リストが文字列を保持するようにし,標準入力で受け付けた文字列から改行コードを削除しリストに追加していく。
+その際,何も入力されていない場合入力終了とし,Ctrl+dが押された場合はプログラムを終了する。
+\subsection{課題への取り組み方針}
+まず,リストが文字列を格納出来るよう構造体Elementのメンバをchar*型に変更する。またgetElementsに関しても仮引数をchar*型に変更し,関数内部では変更した構造体のポインタを返すようにする。
+また構造体を作成する際に使用する,標準入力から受け付けた文字列を,動的なメモリに保存し,そのポインタを返すgetstring()を作成する。getstring()の挙動は課題内容の説明にある要件を満たすよう条件分岐を用いて実装する。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-1.c ,label=s2212022-1.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+
+    #define BUFSIZE 100
+
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+
+    struct Element{
+        char* val;
+        struct Element *next;
+    };
+
+    struct LIST{
+        struct Element *h;
+        struct Element *t;
+    };
+
+    struct Element *getElement(char* s){
+        struct Element *P;
+
+        P = (struct Element*)malloc(sizeof(struct Element));
+
+        if(P == NULL){
+            printf("Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        P->val = s;
+        P->next = NULL;
+        return P;
+    }
+
+    struct LIST *intitList(){
+        struct LIST *l;
+
+        l = (struct LIST*)malloc(sizeof(struct LIST));
+        if(l == NULL){
+            printf("MEmory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        l->h = getElement("");
+        l->t = l->h;
+        return l;
+    }
+
+    void appendElement(struct LIST *l, char* s){
+        struct Element *e;
+        int i;
+
+        e = getElement(s);
+        l->t->next = e;
+        l->t = e;
+    }
+
+    void printALLElements(struct LIST *l){
+        struct Element *e;
+
+        for(e=l->h->next; e != NULL; e =e->next){
+            printf("val = %s\n", e->val);
+        }
+    }
+
+    char* getstring(){
+        char buf[BUFSIZE];
+        char* p;
+        
+        if(fgets(buf,BUFSIZE,stdin) == NULL){
+            exit(EXIT_SUCCESS);
+        }
+
+        if(buf[0] == '\n'){
+            return NULL;
+        }
+
+        chomp(buf);
+        p = (char*)malloc(sizeof(char)*(strlen(buf)+1));
+        strcpy(p,buf);
+        return p;
+    }    
+
+    int main(int ac,char* av[]){
+        struct LIST *l1, *l2;
+        char* s;
+
+        l1 = intitList();
+        while(1){
+            printf("input a string (quit whem Ctrl + D): ");
+            s = getstring();
+
+            if (s == NULL){
+                break;
+            }
+            appendElement(l1, s);
+        }
+
+        printf("l1\n");
+        printALLElements(l1);
+    }    
+\end{lstlisting}
+
+元あるコードからの大きな変更点はgetstring()で,buffaに存在する配列を動的なメモリにstrcpyによりコピーした。また,無入力の際に終了できるよう,bufのインデックス0が改行文字である場合,標準入力の受付を終了するようにした。
+また,Ctrl+Dで強制終了を実現できるように,
+
+
+\subsection{確認}
+入力した文字列がすべて表示される事,空行入力によって受付終了される事,ctrl+Dにて強制終了される事を確認する。
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test1,label=test1]
+    input a string (quit whem Ctrl + D): apple
+    input a string (quit whem Ctrl + D): orange
+    input a string (quit whem Ctrl + D): banana
+    input a string (quit whem Ctrl + D): tomato
+    input a string (quit whem Ctrl + D): Ctrl+D detected!
+
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test2,label=test2]
+    input a string (quit whem Ctrl + D): apple
+    input a string (quit whem Ctrl + D): orange
+    input a string (quit whem Ctrl + D): tomat
+    input a string (quit whem Ctrl + D): end
+    input a string (quit whem Ctrl + D):
+    l1
+    val = apple
+    val = orange
+    val = tomat
+    val = end    
+\end{lstlisting}
+
+上記二つの条件を満たしていることがわかる。
+
+\section{strcmpの実装(設問2)}。
+\subsection{課題内容}
+設問1で作成したコードに改良を加えて,検索機能を付与する。
+\subsection{課題への取り組み方針}
+int search(struct LIST *l, char* s)を定義し,検索に引っかかれば1を,リストの末尾まで検索にかからなければ0を返すよう関数内部を記述する。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-2.c ,label=s2212022-2.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+
+    #define BUFSIZE 100
+
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+
+    struct Element{
+        char* val;
+        struct Element *next;
+    };
+
+    struct LIST{
+        struct Element *h;
+        struct Element *t;
+    };
+
+    struct Element *getElement(char* s){
+        struct Element *P;
+
+        P = (struct Element*)malloc(sizeof(struct Element));
+
+        if(P == NULL){
+            printf("Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        P->val = s;
+        P->next = NULL;
+        return P;
+    }
+
+    struct LIST *intitList(){
+        struct LIST *l;
+
+        l = (struct LIST*)malloc(sizeof(struct LIST));
+        if(l == NULL){
+            printf("MEmory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        l->h = getElement("");
+        l->t = l->h;
+        return l;
+    }
+
+    void appendElement(struct LIST *l, char* s){
+        struct Element *e;
+        int i;
+
+        e = getElement(s);
+        l->t->next = e;
+        l->t = e;
+    }
+
+    void printALLElements(struct LIST *l){
+        struct Element *e;
+
+        for(e=l->h->next; e != NULL; e =e->next){
+            printf("val = %s\n", e->val);
+        }
+    }
+
+    int search(struct LIST *l, char* s){
+        struct Element* e;
+        for(e=l->h->next; e != NULL; e =e->next){
+            if(strcmp(e->val,s) == 0){
+                return 1;
+            }
+        }
+        return 0;
+    }
+
+    char* getstring(){
+        char buf[BUFSIZE];
+        char* p;
+        
+        if(fgets(buf,BUFSIZE,stdin) == NULL){
+            exit(EXIT_SUCCESS);
+        }
+
+        if(buf[0] == '\n'){
+            return NULL;
+        }
+
+        chomp(buf);
+        p = (char*)malloc(sizeof(char)*(strlen(buf)+1));
+        strcpy(p,buf);
+        return p;
+    }    
+
+    int main(int ac,char* av[]){
+        struct LIST *l1;
+        char* s1;
+        char* s2;
+
+        l1 = intitList();
+        while(1){
+            printf("input a string (quit whem Ctrl + D): ");
+            s1 = getstring();
+
+            if (s1 == NULL){
+                break;
+            }
+            appendElement(l1, s1);
+        }
+
+        printf("l1\n");
+        printALLElements(l1);
+
+        printf("input a search string (quit whem Ctrl + D): ");
+        s2 = getstring();
+        if(search(l1,s2) == 1){
+            printf("found\n");
+        }else{
+            printf("not found\n");
+        }
+    }    
+\end{lstlisting}
+
+条件を満たすように実装した結果、図\ref{s2212022-2.c}となった。
+
+\subsubsection{確認}
+数回呼び出してstrcmp関数が正常に動作しているか確認すると、
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test3,label=test3]
+    input a string (quit whem Ctrl + D): apple
+    input a string (quit whem Ctrl + D): orange
+    input a string (quit whem Ctrl + D): tomato
+    input a string (quit whem Ctrl + D):
+    l1
+    val = apple
+    val = orange
+    val = tomato
+    input a search string (quit whem Ctrl + D): apple
+    found    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test4,label=test4]
+    input a string (quit whem Ctrl + D): apple
+    input a string (quit whem Ctrl + D): orange
+    input a string (quit whem Ctrl + D): tomato
+    input a string (quit whem Ctrl + D): cucumber
+    input a string (quit whem Ctrl + D):
+    l1
+    val = apple
+    val = orange
+    val = tomato
+    val = cucumber
+    input a search string (quit whem Ctrl + D): lettace
+    not found    
+\end{lstlisting}
+
+検索にかかる際,かからない際,共に作動していることが確認できた。
+
+\section{mystrcatの実装(設問3)}
+\subsection{課題内容の説明}
+作成したリストから入力した文字列を削除し,新しいリストを作成,および表示できるよう設問2で作成したコードを改良する。
+\subsection{課題への取り組み方針}
+削除機能を持たせるため,まずは構造体Elementのメンバに一つ手前の構造体ポインタを格納するbeforeを追加する。
+そして双方向リストを作成するためにappendElementsをnextの登録だけではなく,beforeの登録も同時に出来るよう変更する。
+また,実際に削除を実行するdeleteElementsの実装をする。
+\subsection{解答結果}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=s2212022-3.c,label=s2212022-3.c]
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <string.h>
+    
+    #define BUFSIZE 100
+    
+    char* chomp(char* s){
+        int i;
+        for(i=0;s[i] != '\0';i++){
+            if(s[i] == '\n'){
+                s[i] = '\0';
+            }
+        }
+    }
+    
+    struct Element{
+        char* val;
+        struct Element *next;
+        struct Element *before;
+    };
+    
+    struct LIST{
+        struct Element *h;
+        struct Element *t;
+    };
+    
+    struct Element *getElement(char* s){
+        struct Element *P;
+    
+        P = (struct Element*)malloc(sizeof(struct Element));
+    
+        if(P == NULL){
+            printf("Memory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        P->val = s;
+        P->next = NULL;
+        P->before = NULL;
+        return P;
+    }
+    
+    struct LIST *intitList(){
+        struct LIST *l;
+    
+        l = (struct LIST*)malloc(sizeof(struct LIST));
+        if(l == NULL){
+            printf("MEmory allocation error\n");
+            exit(EXIT_FAILURE);
+        }
+        l->h = getElement("");
+        l->t = l->h;
+        return l;
+    }
+    
+    void appendElement(struct LIST *l, char* s){
+        struct Element *e;
+        int i;
+    
+        e = getElement(s);
+        e->before = l->t;
+        l->t->next = e;
+        l->t = e;
+    }
+    
+    void printALLElements(struct LIST *l){
+        struct Element *e;
+    
+        for(e=l->h->next; e != NULL; e =e->next){
+            printf("val = %s\n", e->val);
+        }
+    }
+    
+    void deleteElements(struct LIST *l, char* s){
+        struct Element* e;
+        for(e=l->h->next; e != NULL; e =e->next){
+            if((strcmp(e->val,s) == 0) && e->next != NULL){
+                e->before->next = e->next;
+                e->next->before = e->before;
+            }
+    
+            if((strcmp(e->val,s) == 0) && e->next == NULL){
+                l->t = e->before;
+                l->t->next = NULL;
+                
+            }
+    
+    
+        }
+    }    
+    
+    char* getstring(){
+        char buf[BUFSIZE];
+        char* p;
+        
+        if(fgets(buf,BUFSIZE,stdin) == NULL){
+            exit(EXIT_SUCCESS);
+        }
+    
+        if(buf[0] == '\n'){
+            return NULL;
+        }
+    
+        chomp(buf);
+        p = (char*)malloc(sizeof(char)*(strlen(buf)+1));
+        strcpy(p,buf);
+        return p;
+    }    
+    
+    int main(int ac,char* av[]){
+        struct LIST *l1;
+        char* s1;
+        char* s2;
+    
+        l1 = intitList();
+        while(1){
+            printf("input a string (quit whem Ctrl + D): ");
+            s1 = getstring();
+    
+            if (s1 == NULL){
+                break;
+            }
+            appendElement(l1, s1);
+        }
+    
+        printf("l1\n");
+        printALLElements(l1);
+    
+        printf("input a search string (quit whem Ctrl + D): ");
+        s2 = getstring();
+        deleteElements(l1,s2);
+    
+        printf("l1\n");
+        printALLElements(l1);
+    
+    }    
+    
+    
+\end{lstlisting}
+
+課題への取り組み方針にて示した要件を満たすようコードを改良した結果,図\ref{s2212022-3.c}となる。
+
+\subsection{確認}
+無入力時の挙動,入力時の挙動について,それぞれ検索にかかる場合と検索にかからない場合を確認すると
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test9,label=test9]
+    input a string (quit whem Ctrl + D):
+    l1
+    input a search string (quit whem Ctrl + D): apple
+    l1    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test10,label=test10]
+    input a string (quit whem Ctrl + D):
+    l1
+    input a search string (quit whem Ctrl + D):
+    l1    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test10,label=test10]
+    l1
+    val = orange
+    val = apple
+    val = pudding
+    input a search string (quit whem Ctrl + D): banana
+    l1
+    val = orange
+    val = apple
+    val = pudding    
+\end{lstlisting}
+
+\begin{lstlisting}[basicstyle=\ttfamily\footnotesize, frame=single, caption=test10,label=test10]
+    l1
+    val = orange
+    val = apple
+    val = banana
+    val = suica
+    input a search string (quit whem Ctrl + D): suica
+    l1
+    val = orange
+    val = apple
+    val = banana    
+\end{lstlisting}
+
+
+上記二つの条件を満たしていることがわかる。
+
+\section{感想}
+設問1では,getstringの分岐が個人的な難所であった。fgetがEOFに達した際,分岐条件で最初に==NULLではなく==EOFとしてしまったため、分岐が正しく行われず、
+バグが発生してしまった。そこでstdio.hにてEOFの定義を確認したところ,int型の-1であるということを知った。fgetの返り値はchar*型の為,型が一致せずエラーが発生していることから,今回は==NULLで対応した。
+設問2ではリストを巡回すれば良いとすぐ気が付いたので時間はかからなかった。
+設問3では、リストを巡回して検索にマッチすれば削除を行い,削除にはnextのみでは,巡回して手前の対象に戻ることが出来ないと考え,構造体にbeforeを加えればよいと数分考えて思いつくことが出来た。
+今回は文献を参照せずに自力でコードを作成することが出来た。web上で簡単に検索できる時代ではあるが,知識を定着して直ぐに出せる事を目標に様々な学習を進めたい。
+
+\bibliographystyle{plain}
+\bibliography{s2212022}
+
+\end{document}
