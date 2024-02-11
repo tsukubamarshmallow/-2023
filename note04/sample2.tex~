@@ -1,0 +1,151 @@
+\documentclass[fontsize=12pt,paper=a4]{jlreq}
+
+\title{\LaTeX での数式の書き方}
+\author{筑波大学 三末和男 (改訂：中井央)}
+\date{2013年5月4日}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+
+数式の記述は、\LaTeX の最も得意とする機能の1つである。
+様々な数式をテキストだけで記述することができる
+\footnote{電子メールや掲示板などプレーンテキストしか利用できない場合に、
+数式を表現する際に \LaTeX の表記を流用することがある。
+そのためにも覚えておくとよいであろう。}。
+なお、本資料では様々な数式を例に挙げるが、
+\LaTeX の機能説明のためのものであり、数式自体には特に意味はがない。
+
+
+
+\section{数式の環境}\label{sec:math}
+
+通常の文章に数式を入れるときは \$ と \$ の間にそれを挟む。例えば、
+\begin{quote}
+\begin{verbatim}
+$f(x) = x + 1$
+\end{verbatim}
+\end{quote}
+と記述すると、$f(x) = x + 1$ のように表示される。
+
+数式を単独で、すなわち行を分けて記述するときには、displaymath 環境を用いるか、
+代わりに \verb+\[+ と \verb+\]+ を使う。
+数式を使うのが文中なのか、それとも単独行で使われるかによって、表示形式が変わるものもある。たとえば、単独行では、
+\[
+\sum_{i=1}^{n} i = \frac{n (n + 1)}{2}
+\]
+\noindent
+のように表示される式が、文中では違う形式で表示される。
+
+equation環境は displaymath 環境と似ているが数式番号が出るところが異なる。
+equation環境で付与される数式番号は「\verb|\label{eq:no-1}|」のように
+参照名を付けることができ、
+「\verb|式(\ref{eq:no-1})|」のように記述することで「式(\ref{eq:no-1})」のように参照できる。
+
+\begin{equation}
+d_{k}(x_{1},y_{1},x_{2},y_{2})  = ((x_{1}-x_{2})^{k})+(y_{1}-y_{2})^{k})^{\frac{1}{k}}
+\label{eq:no-1}
+\end{equation}
+
+
+
+\section{数式で用いる文字}
+
+プレビューした結果を見ると分かるように、
+数式ではアルファベットは斜字体で、数字はローマン体で書くのが普通である。
+これらは数式の環境において自動的に指定される。
+
+\subsection{括弧}
+
+\[ (x), [x], \{x\}, \langle x \rangle, \lfloor x \rfloor, \lceil x \rceil \]
+
+\subsection{ギリシア文字}
+英字と同じ文字の場合には英字をそのまま使用する。一部の小文字には変体文字が用意されている。
+\[ \alpha \beta \gamma \delta \epsilon \zeta \eta \theta \iota \kappa \lambda \mu \nu \xi \pi \rho \sigma \tau \upsilon \phi \chi \psi \omega \]
+\[ \varepsilon \vartheta \varpi \varrho \varsigma \varphi \]
+\[ \Gamma \Delta \Theta \Lambda \Xi \Pi \Sigma \Upsilon \Phi \Psi \Omega \]
+
+\subsection{記号}
+様々な演算子や関係記号が用意されている。関係記号は否定形も記述できる。
+\[ \times, \div, \cap, \cup, \vee, \wedge, \setminus, \oplus, \otimes, \bigtriangleup, \angle \]
+\[ \le, \ge, \subset, \supset, \subseteq, \supseteq, \in, \ni, \emptyset, \bar{A} \]
+\[ \not\le, \not\ge, \not\subset, \not\supset, \notin, \not\ni \]
+空集合の記号は$\emptyset$である。ギリシア文字の$\phi$とは異なるので注意すること。
+様々な形の矢印も用意されている。
+
+\[ \leftarrow, \Leftarrow, \rightarrow, \Rightarrow, \leftrightarrow, \Leftrightarrow \]
+
+$i = 1, \ldots , n$や$s = 1 + \cdots + n$のような連続した点を表示する命令もある。ピリオドを連続させるわけではない。
+
+\section{関数}
+
+変数名等には斜体字が用いられるが、
+関数名 ($\sin$ や $\cos$ など) はローマン体で書く習慣となっている。
+そのため、専用の命令がある。
+\verb|\sin|、\verb|\cos|、\verb|\lim|、\verb|\log|のように記述する。
+そうすることで、$f(x) = \sin x + 2 \cos x$ や 
+$\lim_{x \rightarrow \infty} \log_2 x$ のように表示される。
+
+数式中で文字をローマン体で表示するには\verb|\mathrm{A}|のように記述する。
+
+\section{べき乗、添字}
+
+数式でよく使われる上付き文字（べき乗など）は\verb|$x^{10}$|のように記述する。
+そうすると$x^{10}$のように表示される。
+下付き文字（添字）は\verb|$x_{i}$|のように記述する。
+そうすると$x_{i}$のように表示される。
+上下に付く文字が1文字のときには\verb|$x^n$| 
+や \verb|$x_n$|のように括弧を省略できる。
+べき乗のべき乗、添字の添字、
+添字付き変数のべき乗などいろいろな組合せも可能である。
+
+\section{シグマ、積分、分数、平方根}
+
+総和を表す($\sum_{n=0}^{10} a_n$)、総積を表す($\prod_{i=1}^{10} i$)、
+積分 ($\int_0^\infty e^{-x} dx$) なども
+簡単に記述することが出来る。これらも文中と単独行で形が変わる。
+微分 ($f'(x), f''(x)$)や分数 ($\frac{x}{y}$)、
+ルート ($\sqrt{2}$、$\sqrt[3]{5}$、$\sqrt{ \sqrt{x} + 1 }$)の記述も容易である。
+
+\section{array環境}
+
+equation環境やdisplaymath環境では数式はセンタリングされて通常中央に配置される。
+しかし、複数の数式を列挙する場合には、等号の位置を揃えたいことがある。
+そのような場合には、eqnarray環境を用いる。
+
+\begin{eqnarray}
+y & = & x^{2} + 2x + 1 \\
+  & = & (x + 1) ^ {2} 
+\end{eqnarray}
+
+array環境を使用することで行列を記述することも出来る。
+
+\begin{equation}
+Q = \left[
+\begin{array}{cc}
+\cos\theta	& - \sin\theta		\\
+\sin\theta	& \cos\theta
+\end{array}
+\right]
+\end{equation}
+
+条件付きの式は下のように表現できる。
+
+\begin{equation}
+|x| = \left\{
+\begin{array}{rl}  % {rl}の代りに{ll}や{cc}なども試しなさい。
+ x & \mbox{$x \ge 0$のとき} \\
+-x & \mbox{それ以外}
+\end{array}
+\right.            % 右側の記述を忘れないこと。\right\}とすると括弧を閉じる。
+\end{equation}
+
+条件の部分は必ずしも数式ではないので\verb|\mbox{$x \ge 0$のとき}|のように\verb|\mbox|を使用して記述している。
+
+$\theta = f(x) = \sin x $
+
+\section{俺の練習}
+定理3.11 Aをm*n行列としたときに
+$L_{A}(x) = Ax $
+\end{document}

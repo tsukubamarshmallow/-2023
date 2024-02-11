@@ -1,0 +1,20 @@
+\begin{thebibliography}{1}
+
+\bibitem{bertin2010}
+Jacques Bertin.
+\newblock {\em Semiology of Graphics: Diagrams, Networks, Maps}.
+\newblock ESRI Press, 2010.
+
+\bibitem{holten2009}
+Danny Holten and Jarke~J. van Wijk.
+\newblock A user study on visualizing directed edges in graphs.
+\newblock In {\em Proceedings of the SIGCHI Conference on Human Factors in
+  Computing Systems}, CHI '09, pages 2299--2308, New York, NY, USA, 2009. ACM.
+
+\bibitem{mackinlay1986}
+Jock Mackinlay.
+\newblock Automating the design of graphical presentations of relational
+  information.
+\newblock {\em ACM Trans. Graph.}, 5(2):110--141, April 1986.
+
+\end{thebibliography}

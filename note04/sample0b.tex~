@@ -1,0 +1,32 @@
+\documentclasss[fontsize=12pt, paper=a4]{jlreq}
+
+\title{\LaTeX の文章サンプル}
+\author{筑波大学 三末和男+中井央}
+\西暦
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+
+\LaTeX の特長の一つは、文章の見た目ではなく構造を記述することにある。言い換えると論理的な構造と見た目を分けて管理できるということである。このことは様々な利点がある。特に長い文章を書く時などに重宝する。
+
+\section{文書クラス}\label{sec:documentclass}
+
+文章を論理構造に着目して記述するために、まずどのような種類の文書かを指定しておく必要がある。\LaTeX では文書クラスとして、本（book）、学術論文（article）、レポート（report）などが用意されている。これらはソースファイルの先頭で
+\begin{verbatim}
+\documentclasss[book, fontsize=12pt, paper=a4]{jlreq}
+\end{verbatim}
+のように指定する。
+
+
+\section{章立て}\label{sec:structure}
+
+文章は、章（chapter）、節（section）、小節（subsection）、段落（paragraph）などによって構成される。それぞれの表題を
+\begin{verbatim}
+\section{章立て}
+\end{verbatim}
+のように記述する。章や節の番号を書く必要はなく、番号は自動的に付与される。
+なお、chapterは、第\ref{sec:documentclass}節で説明した book や report で使用する。
+
+\end{document}

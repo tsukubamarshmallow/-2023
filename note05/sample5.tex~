@@ -1,0 +1,94 @@
+\documentclass[fontsize=12pt,paper=a4]{jlreq}
+
+\usepackage{hologo}
+
+\title{\LaTeX での参考文献の書き方}
+\author{筑波大学 三末和男(改訂：中井央)}
+\date{2013年5月5日(2023/04/15 改訂)}
+
+\begin{document}
+\maketitle
+
+\section{はじめに}
+
+卒業論文など学術論文では参考文献を記載することは必須である。
+研究に関連する文献は、本文中で引用するとともに、
+文章の最後に文献リストとして書誌情報を列挙する必要がある。
+参照番号の管理や書誌情報の管理など、
+項目数が多くなると大変手間のかかる作業になる。
+参考文献情報の作成は、常に行うように心がけ、
+必要な際に慌てて作成しなくてもよいようにしておこう。
+
+\section{本文中での引用}
+
+たとえば、論文の一部に下のような記述があったとしよう。
+
+\begin{quote}
+Bertinは図形を視覚的に修飾する属性を「視覚変数」と呼んだ\cite{bertin2010}。Mackinlayは視覚変数による読み取り精度を整理した\cite{mackinlay1986}。さらにHoltenらは向きを表現する図形の読み取り易さを調査した\cite{holten2009}。
+\end{quote}
+
+「\cite{bertin2010}」や「\cite{mackinlay1986}」が文献の引用を表す文献番号である。この番号は文末の参考文献リストに掲載される順番である。論文の修正により文献が増えたり減ったりすると、番号がずれるため、手作業での管理は大変である。文献に名前を付けておけば、文献番号の付与は\LaTeX にまかせることができる。そのためには、章や図の番号と同じように、文献に適当な名前をつけてその名前で参照する。たとえば、この文章中では「\verb|\cite{bertin2010}|」と書くことで「\cite{bertin2010}」のように番号を挿入することができる。
+
+\section{文献リストの作成}
+
+文献リストはthebibliography環境を使用して記述する。この文書は実際にthebibliography環境を使用しているのでソースプログラムを見るとよい。
+
+文献リストに記載すべき書誌情報は、文献の種類によって異なる。卒業論文等で引用する文献は大きく分けて、本（書籍）、雑誌論文、会議論文であろう。文献\cite{bertin2010}は本の例、文献\cite{mackinlay1986}は雑誌論文の例、文献\cite{holten2009}は会議論文の例である。
+
+掲載すべき書誌情報は原則として以下のようなものである。
+
+\begin{description}
+\item[本:] 著者名（または編集者名）、題名、出版社名、出版年、版もあれば記載
+\item[雑誌論文:] 著者名、題名（論文の題名）、雑誌名、巻（Volume）、号（Number）、ページ番号（始めと終り）、出版年
+\item[会議論文:] 著者名、題名（論文の題名）、会議名（予稿集名）、ページ番号（始めと終り）、発表年
+\end{description}
+
+なお、書誌情報の記載方法は学会によって規定があり、さらに学会によって異なることが多い。したがって、学会に投稿する際には、学会の投稿規定をよく調べる必要がある。
+
+
+\section{文献データベースの作成}
+
+論文をたくさん書くようになると、論文毎に文献リストを作成するのも面倒である。また学会毎に書誌情報の記載方法を変えるのも手間が掛る。\hologo{BibTeX}というプログラムを利用することで、自分用の文献データベースとも言うべきファイルを用意しておけば、そこから自動的に文献リストを作ることもできる。学会によっては\hologo{BibTeX}用のスタイルファイルを提供しているので、それを利用することで学会の規定に沿った文献リストを自動的に作成することもできる。
+
+ファイル「sample5.bib」は、この文章で引用した文献を\hologo{BibTeX}用のファイルにしたものである。この文書では thebibliography 環境を使用しているため、\hologo{BibTeX} 用のファイルは使用していないが、このファイルを\hologo{BibTeX}で処理すれば、thebibliography環境の記述は不要となる。
+
+このようなファイルを準備するのは大変そうであるが、実は学会のデジタルライブラリが提供してくれている。たとえばACMのデジタルライブラリで、文献\cite{holten2009}を見つけたところで、「\hologo{BibTeX}」というリンクをクリックすると、下のようなテキストが表示されるので、これをコピーペーストすれば、簡単にファイルを作成できる。
+
+\begin{quote}
+\tiny
+\begin{verbatim}
+@inproceedings{Holten:2009:USV:1518701.1519054,
+ author = {Holten, Danny and van Wijk, Jarke J.},
+ title = {A user study on visualizing directed edges in graphs},
+ booktitle = {Proceedings of the SIGCHI Conference on Human Factors in Computing Systems},
+ series = {CHI '09},
+ year = {2009},
+ isbn = {978-1-60558-246-7},
+ location = {Boston, MA, USA},
+ pages = {2299--2308},
+ numpages = {10},
+ url = {http://doi.acm.org/10.1145/1518701.1519054},
+ doi = {10.1145/1518701.1519054},
+ acmid = {1519054},
+ publisher = {ACM},
+ address = {New York, NY, USA},
+ keywords = {curves, directed edges, graphs, information visualization, lines, user studies},
+} 
+\end{verbatim}
+\end{quote}
+
+\bibliographystyle{plain}  %plainの代りにalphaでもよい
+\bibliography{sample5}
+
+\begin{comment}
+\begin{thebibliography}{99}
+
+\bibitem{bertin2010} J. Bertin, Semiology of Graphics: Diagrams, Networks, Maps, ESRI Press, 2010.
+
+\bibitem{holten2009} D. Holten and Jarke J. van Wijk, A User Study on Visualizing Directed Edges in Graphs, in Proceedings of the SIGCHI Conference on Human Factors in Computing Systems (CHI '09), pp.~2299--2308, 2009.
+
+\bibitem{mackinlay1986} J. Mackinlay, Automating the Design of Graphical Presentations of Relational Information, ACM Trans. of Graphics, Vol.~5, No.~2, pp.~110--141, 1986.
+
+\end{thebibliography}
+\end{comment}
+\end{document}
